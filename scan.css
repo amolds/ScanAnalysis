@@ -1,0 +1,26 @@
+/*
+.input-area {
+    display: flex;
+    justify-content: start;
+}
+
+.input-area span {
+    margin-right: 8px;
+}
+
+.input-area textarea {
+    width: 500px;
+    height: 300px;
+}
+*/
+.input-area {
+  display: flex;
+  justify-content: start;
+}
+.input-area span {
+  margin-right: 8px;
+}
+.input-area textarea {
+  width: 500px;
+  height: 300px;
+}
