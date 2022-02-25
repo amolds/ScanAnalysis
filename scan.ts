@@ -1,4 +1,3 @@
-
 class Word {
     private word: string
 
@@ -119,4 +118,63 @@ function onBlur(): void {
     console.log('paragraph: toString()', paragraph.toString());
     console.log('sentence 1: toString()', firstSentenceWords.toString());
     console.log('sentence 2: toString()', secondSentenceWords.toString());
+
+
+
+    // TODO: this should be in a service which client can consume through accessor method eg: isValidWord(theWord)
+    // 1. think of ways to optimize this - eg is it faster to create 26 buckets based on first character?
+    // 2. can you handle mixed case / all caps?  You should normalize the data
+    // 3. some words may be top hits - does it make sense to create a small "L1" cache for these?
+    let dictionary: Array<string> = [];
+
+    // NOTE: https://github.com/JacobSamro/ngx-spellchecker#:~:text=Simple%20Spellchecker%20is%20a%20spellchecker,a%20list%20of%20valid%20words.
+    //       Provides an Angular library for spell check... we reference the endpoint for custom spell check (not in Angular)
+    fetch('https://raw.githubusercontent.com/JacobSamro/ngx-spellchecker/master/dict/normalized_en-US.dic').then(response => {
+        response.body.getReader().read().then(results => {
+            const words = Utf8ArrayToStr(results.value).split('\n');
+            console.log(words);
+            dictionary.push(...words);
+
+            console.log(dictionary.length);
+
+            console.log('aaron?', dictionary.indexOf('aaron') >= 0);
+            console.log('aaakdkfdjf', dictionary.indexOf('aaakdkfdjf') >= 0);
+        });
+    });
+}
+
+
+// NOTE: taken from this site: https://ourcodeworld.com/articles/read/164/how-to-convert-an-uint8array-to-string-in-javascript
+function Utf8ArrayToStr(array): string {
+    var out, i, len, c;
+    var char2, char3;
+
+    out = "";
+    len = array.length;
+    i = 0;
+    while(i < len) {
+    c = array[i++];
+    switch(c >> 4)
+    { 
+      case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+        // 0xxxxxxx
+        out += String.fromCharCode(c);
+        break;
+      case 12: case 13:
+        // 110x xxxx   10xx xxxx
+        char2 = array[i++];
+        out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+        break;
+      case 14:
+        // 1110 xxxx  10xx xxxx  10xx xxxx
+        char2 = array[i++];
+        char3 = array[i++];
+        out += String.fromCharCode(((c & 0x0F) << 12) |
+                       ((char2 & 0x3F) << 6) |
+                       ((char3 & 0x3F) << 0));
+        break;
+    }
+    }
+
+    return out;
 }
