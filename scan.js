@@ -106,4 +106,53 @@ function onBlur() {
     console.log('paragraph: toString()', paragraph.toString());
     console.log('sentence 1: toString()', firstSentenceWords.toString());
     console.log('sentence 2: toString()', secondSentenceWords.toString());
+    var dictionary = [];
+    fetch('https://raw.githubusercontent.com/JacobSamro/ngx-spellchecker/master/dict/normalized_en-US.dic').then(function (response) {
+        response.body.getReader().read().then(function (results) {
+            var words = Utf8ArrayToStr(results.value).split('\n');
+            console.log(words);
+            dictionary.push.apply(dictionary, words);
+            console.log(dictionary.length);
+            console.log('aaron?', dictionary.indexOf('aaron') >= 0);
+            console.log('aaakdkfdjf', dictionary.indexOf('aaakdkfdjf') >= 0);
+        });
+    });
+}
+function Utf8ArrayToStr(array) {
+    var out, i, len, c;
+    var char2, char3;
+    out = "";
+    len = array.length;
+    i = 0;
+    while (i < len) {
+        c = array[i++];
+        switch (c >> 4) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                // 0xxxxxxx
+                out += String.fromCharCode(c);
+                break;
+            case 12:
+            case 13:
+                // 110x xxxx   10xx xxxx
+                char2 = array[i++];
+                out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+                break;
+            case 14:
+                // 1110 xxxx  10xx xxxx  10xx xxxx
+                char2 = array[i++];
+                char3 = array[i++];
+                out += String.fromCharCode(((c & 0x0F) << 12) |
+                    ((char2 & 0x3F) << 6) |
+                    ((char3 & 0x3F) << 0));
+                break;
+        }
+    }
+    return out;
 }
